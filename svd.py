@@ -19,10 +19,10 @@ This reconstructed image is then displayed, showing the approximation of the ori
 '''
 ```
 """
-
 import numpy as np
 import matplotlib.pyplot as plt
 
+# 1. The image is just an 8x8 matrix of 0s and 1s
 image_face = np.array([
     [0, 0, 1, 1, 1, 1, 0, 0],
     [0, 1, 0, 0, 0, 0, 1, 0],
@@ -34,16 +34,26 @@ image_face = np.array([
     [0, 0, 1, 1, 1, 1, 0, 0]
 ])
 
-plt.imshow(image_face, cmap='gray_r')
-
+# 2. Run SVD:  image_face = U @ diag(S) @ Vh
 U, S, Vh = np.linalg.svd(image_face)
+print("U shape :", U.shape)     # (8, 8)
+print("S shape :", S.shape)     # (8,)
+print("Vh shape:", Vh.shape)    # (8, 8)
+print("Singular values:", S.round(2))
 
-U.shape, S.shape, Vh.shape
-
+# 3. Rebuild using only the top k "stretches"
 k = 3
+rebuilt_image = U[:, :k] @ np.diag(S[:k]) @ Vh[:k, :]
 
-U[:, : k].shape, S[: k].shape, Vh[: k, :].shape
+# 4. Show original vs rebuilt, side by side
+fig, axes = plt.subplots(1, 2, figsize=(8, 4))
+axes[0].imshow(image_face, cmap='gray_r')
+axes[0].set_title("Original (full matrix)")
+axes[0].axis('off')
 
-rebuilded_image = U[:, : k] @ np.diag(S[: k]) @ Vh[: k, :]
+axes[1].imshow(rebuilt_image, cmap='gray_r')
+axes[1].set_title(f"Rebuilt from top {k} stretches")
+axes[1].axis('off')
 
-plt.imshow(rebuilded_image, cmap='gray_r')
+plt.tight_layout()
+plt.show()
